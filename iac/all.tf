@@ -174,6 +174,7 @@ resource "aws_instance" "bastion" {
 
   user_data = <<-EOF
               #!/bin/bash
+              sleep 60
               sudo mv /etc/localtime /etc/localtime_org
               sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
               sudo yum update -y
@@ -194,8 +195,11 @@ resource "aws_instance" "bastion" {
               SECRET=$(aws secretsmanager get-secret-value --secret-id ${replace(module.aurora.cluster_master_user_secret[0].secret_arn, "!", "\\!")} --query SecretString --output text)
               DBUSER=$(echo $SECRET | jq -r .username)
               PASSWORD=$(echo $SECRET | jq -r .password)
+              mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD < /home/ec2-user/new_datalake/src/ecommerce/sample_data.sql
               PRIMARY_HOST="${module.aurora.cluster_endpoint}"
               READONLY_HOST="${module.aurora.cluster_endpoint}"
+              echo "export ROOT_DBUSER=$(echo $SECRET | jq -r .username)" >> $BASH_PROFILE_PATH
+              echo "export ROOT_PASSWORD=$(echo $SECRET | jq -r .password)" >> $BASH_PROFILE_PATH
               echo "export DBUSER=appuser" >> $BASH_PROFILE_PATH
               echo "export PASSWORD=appuser" >> $BASH_PROFILE_PATH
               echo "export PRIMARY_HOST=$PRIMARY_HOST" >> $BASH_PROFILE_PATH
@@ -204,7 +208,6 @@ resource "aws_instance" "bastion" {
               echo "export READONLY_PORT=3306" >> $BASH_PROFILE_PATH
               echo "export PRIMARY_DBNAME=ecommerce" >> $BASH_PROFILE_PATH
               echo "export READONLY_DBNAME=ecommerce" >> $BASH_PROFILE_PATH
-              mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD < /home/ec2-user/new_datalake/src/ecommerce/sample_data.sql
               echo "alias ss='mysql -h ${module.aurora.cluster_endpoint} -u appuser -pappuser'" >> $BASH_PROFILE_PATH
               sudo chown -R ec2-user:ec2-user /home/ec2-user/new_datalake
               cd /home/ec2-user; touch user_data_complete.txt              

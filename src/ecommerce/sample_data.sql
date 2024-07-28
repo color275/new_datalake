@@ -1,3 +1,6 @@
+DROP DATABASE IF EXISTS ecommerce;
+DROP USER IF EXISTS appuser@"%";
+
 create database ecommerce;
 
 create user appuser@"%" identified by "appuser";
