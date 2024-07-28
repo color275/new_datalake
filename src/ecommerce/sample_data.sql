@@ -1,3 +1,4 @@
+drop database ecommerce;
 create database ecommerce;
 
 create user appuser@"%" identified by "appuser";

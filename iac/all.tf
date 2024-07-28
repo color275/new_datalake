@@ -174,6 +174,8 @@ resource "aws_instance" "bastion" {
 
   user_data = <<-EOF
               #!/bin/bash
+              sudo mv /etc/localtime /etc/localtime_org
+              sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
               sudo yum update -y
               sudo yum -y install git jq
               sudo dnf -y localinstall https://dev.mysql.com/get/mysql80-community-release-el9-4.noarch.rpm
@@ -205,6 +207,7 @@ resource "aws_instance" "bastion" {
               mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD < /home/ec2-user/new_datalake/src/ecommerce/sample_data.sql
               echo "alias ss='mysql -h ${module.aurora.cluster_endpoint} -u appuser -pappuser'" >> $BASH_PROFILE_PATH
               sudo chown -R ec2-user:ec2-user /home/ec2-user/new_datalake
+              cd /home/ec2-user; touch user_data_complete.txt              
               EOF
   
   depends_on = [
