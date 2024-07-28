@@ -178,17 +178,32 @@ resource "aws_instance" "bastion" {
               sudo yum -y install git jq
               sudo dnf -y localinstall https://dev.mysql.com/get/mysql80-community-release-el9-4.noarch.rpm
               sudo dnf -y install mysql mysql-community-client
+              # docker install
+              sudo yum -y install docker
+              sudo service docker start
+              sudo chkconfig docker on
+              sudo usermod -a -G docker $USER
               cd /home/ec2-user
-              git clone https://github.com/color275/dbt.git
+              git clone https://github.com/color275/new_datalake.git
+
+              BASH_PROFILE_PATH="/home/ec2-user/.bash_profile"
+
               SECRET=$(aws secretsmanager get-secret-value --secret-id ${replace(module.aurora.cluster_master_user_secret[0].secret_arn, "!", "\\!")} --query SecretString --output text)
-              MYSQL_USERNAME=$(echo $SECRET | jq -r .username)
-              MYSQL_PASSWORD=$(echo $SECRET | jq -r .password)
-              mysql -h ${module.aurora.cluster_endpoint} -u $MYSQL_USERNAME -p$MYSQL_PASSWORD < /home/ec2-user/dbt/mysql/sample_data.sql
-              echo "MYSQL_HOST=${module.aurora.cluster_endpoint}" > /home/ec2-user/dbt/.env
-              echo "MYSQL_USER=$MYSQL_USERNAME" >> /home/ec2-user/dbt/.env
-              echo "MYSQL_PASSWORD=$MYSQL_PASSWORD" >> /home/ec2-user/dbt/.env
-              echo "MYSQL_DB=ecommerce" >> /home/ec2-user/dbt/.env
-              chown -R ec2-user:ec2-user /home/ec2-user/dbt
+              DBUSER=$(echo $SECRET | jq -r .username)
+              PASSWORD=$(echo $SECRET | jq -r .password)
+              PRIMARY_HOST="${module.aurora.cluster_endpoint}"
+              READONLY_HOST="${module.aurora.cluster_endpoint}"
+              echo "export DBUSER=${DBUSER}" >> $BASH_PROFILE_PATH
+              echo "export PASSWORD=${PASSWORD}" >> $BASH_PROFILE_PATH
+              echo "export PRIMARY_HOST=${PRIMARY_HOST}" >> $BASH_PROFILE_PATH
+              echo "export READONLY_HOST=${READONLY_HOST}" >> $BASH_PROFILE_PATH
+              echo "export PRIMARY_PORT=3306" >> $BASH_PROFILE_PATH
+              echo "export READONLY_PORT=3306" >> $BASH_PROFILE_PATH
+              echo "export PRIMARY_DBNAME=ecommerce" >> $BASH_PROFILE_PATH
+              echo "export READONLY_DBNAME=ecommerce" >> $BASH_PROFILE_PATH
+              mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD < /home/ec2-user/dbt/mysql/sample_data.sql
+              echo "alais ss='mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD'" >> $BASH_PROFILE_PATH
+
               EOF
   
   depends_on = [
