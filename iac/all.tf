@@ -201,8 +201,8 @@ resource "aws_instance" "bastion" {
               echo "export READONLY_PORT=3306" >> $BASH_PROFILE_PATH
               echo "export PRIMARY_DBNAME=ecommerce" >> $BASH_PROFILE_PATH
               echo "export READONLY_DBNAME=ecommerce" >> $BASH_PROFILE_PATH
-              mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD < /home/ec2-user/dbt/mysql/sample_data.sql
-              echo "alais ss='mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD'" >> $BASH_PROFILE_PATH
+              mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD < /home/ec2-user/new_datalake/src/ecommerce/sample_data.sql
+              echo "alias ss='mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD'" >> $BASH_PROFILE_PATH
 
               EOF
   

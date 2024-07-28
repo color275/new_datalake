@@ -1,5 +1,8 @@
 create database ecommerce;
 
+create user appuser@"%" identified by "appuser";
+grant all privileges on ecommerce.* to appuser@"%";
+
 CREATE TABLE ecommerce.customer (
   customer_id INT AUTO_INCREMENT PRIMARY KEY,
   password VARCHAR(128) NOT NULL,
