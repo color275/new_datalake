@@ -81,10 +81,10 @@ resource "aws_security_group" "common_sg" {
   }
 
   ingress {
-    description = "Allow SSH from current IP"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
+    description = "Allow All from current IP"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = [local.my_ip]
   }
 
@@ -178,6 +178,9 @@ resource "aws_instance" "bastion" {
               sudo yum -y install git jq
               sudo dnf -y localinstall https://dev.mysql.com/get/mysql80-community-release-el9-4.noarch.rpm
               sudo dnf -y install mysql mysql-community-client
+              # pip mysqlclient
+              sudo yum install -y mysql-devel gcc
+              sudo yum install -y python3-devel.x86_64
               # docker install
               sudo yum -y install docker
               sudo service docker start
@@ -185,25 +188,23 @@ resource "aws_instance" "bastion" {
               sudo usermod -a -G docker $USER
               cd /home/ec2-user
               git clone https://github.com/color275/new_datalake.git
-
               BASH_PROFILE_PATH="/home/ec2-user/.bash_profile"
-
               SECRET=$(aws secretsmanager get-secret-value --secret-id ${replace(module.aurora.cluster_master_user_secret[0].secret_arn, "!", "\\!")} --query SecretString --output text)
               DBUSER=$(echo $SECRET | jq -r .username)
               PASSWORD=$(echo $SECRET | jq -r .password)
               PRIMARY_HOST="${module.aurora.cluster_endpoint}"
               READONLY_HOST="${module.aurora.cluster_endpoint}"
-              echo "export DBUSER=${DBUSER}" >> $BASH_PROFILE_PATH
-              echo "export PASSWORD=${PASSWORD}" >> $BASH_PROFILE_PATH
-              echo "export PRIMARY_HOST=${PRIMARY_HOST}" >> $BASH_PROFILE_PATH
-              echo "export READONLY_HOST=${READONLY_HOST}" >> $BASH_PROFILE_PATH
+              echo "export DBUSER=appuser" >> $BASH_PROFILE_PATH
+              echo "export PASSWORD=appuser" >> $BASH_PROFILE_PATH
+              echo "export PRIMARY_HOST=$PRIMARY_HOST" >> $BASH_PROFILE_PATH
+              echo "export READONLY_HOST=$READONLY_HOST" >> $BASH_PROFILE_PATH
               echo "export PRIMARY_PORT=3306" >> $BASH_PROFILE_PATH
               echo "export READONLY_PORT=3306" >> $BASH_PROFILE_PATH
               echo "export PRIMARY_DBNAME=ecommerce" >> $BASH_PROFILE_PATH
               echo "export READONLY_DBNAME=ecommerce" >> $BASH_PROFILE_PATH
               mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD < /home/ec2-user/new_datalake/src/ecommerce/sample_data.sql
-              echo "alias ss='mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD'" >> $BASH_PROFILE_PATH
-
+              echo "alias ss='mysql -h ${module.aurora.cluster_endpoint} -u appuser -pappuser'" >> $BASH_PROFILE_PATH
+              sudo chown -R ec2-user:ec2-user /home/ec2-user/new_datalake
               EOF
   
   depends_on = [

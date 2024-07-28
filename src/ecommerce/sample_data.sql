@@ -1,6 +1,7 @@
 create database ecommerce;
 
 create user appuser@"%" identified by "appuser";
+ALTER USER  appuser@'%' IDENTIFIED WITH mysql_native_password BY 'appuser';
 grant all privileges on ecommerce.* to appuser@"%";
 
 CREATE TABLE ecommerce.customer (
