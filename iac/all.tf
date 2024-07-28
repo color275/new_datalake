@@ -195,9 +195,9 @@ resource "aws_instance" "bastion" {
               SECRET=$(aws secretsmanager get-secret-value --secret-id ${replace(module.aurora.cluster_master_user_secret[0].secret_arn, "!", "\\!")} --query SecretString --output text)
               DBUSER=$(echo $SECRET | jq -r .username)
               PASSWORD=$(echo $SECRET | jq -r .password)
-              mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD < /home/ec2-user/new_datalake/src/ecommerce/sample_data.sql
               PRIMARY_HOST="${module.aurora.cluster_endpoint}"
               READONLY_HOST="${module.aurora.cluster_endpoint}"
+              mysql -h ${module.aurora.cluster_endpoint} -u $DBUSER -p$PASSWORD < /home/ec2-user/new_datalake/src/ecommerce/sample_data.sql
               echo "export ROOT_DBUSER=$(echo $SECRET | jq -r .username)" >> $BASH_PROFILE_PATH
               echo "export ROOT_PASSWORD=$(echo $SECRET | jq -r .password)" >> $BASH_PROFILE_PATH
               echo "export DBUSER=appuser" >> $BASH_PROFILE_PATH
@@ -380,16 +380,20 @@ module "aurora" {
 # OUTPUT
 ################################################################################
 # Public IP 출력
-output "bastion_public_ip" {
+output "public_ip" {
   description = "The public IP of the bastion instance"
   value       = aws_instance.bastion.public_ip
 }
 
-output "connection_instructions" {
+output "ssh_connect" {
   description = "Instructions to connect to the Bastion instance"
   value       = "chmod 400 ${local.name}-key.pem; ssh -i ${local.name}-key.pem ec2-user@${aws_instance.bastion.public_ip}"
 }
 
-output "cluster_master_user_secret" {
-  value = module.aurora.cluster_master_user_secret[0].secret_arn
+output "rds_cluster_endpoint" {
+  value       = "${module.aurora.cluster_endpoint}"
 }
+
+# output "cluster_master_user_secret" {
+#   value = module.aurora.cluster_master_user_secret[0].secret_arn
+# }
