@@ -30,7 +30,7 @@ if __name__ == '__main__':
     ###########################################################################
 
     # 실행 모드 확인
-    is_cluster_mode = os.getenv("DEPLOY_MODE", "cluster")
+    is_cluster_mode = os.getenv("SPARK_DEPLOY_MODE", "cluster")
 
     spark_builder = SparkSession.builder \
         .config("spark.hadoop.fs.s3a.aws.credentials.provider", "com.amazonaws.auth.DefaultAWSCredentialsProviderChain") \
@@ -57,14 +57,14 @@ if __name__ == '__main__':
         .appName("Iceberg CDC")
 
     # 클러스터 모드에서만 적용할 설정 추가
-    # if is_cluster_mode == "cluster":
-    #     # local 에서 아래 옵션은 bug가 있다.
-    #     # .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
-    #     print("## Cluster Mode : True")
-    #     spark_builder = spark_builder.config(
-    #         "spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
-    # else:
-    #     print("# Cluster Mode : False")
+    if is_cluster_mode == "cluster":
+        # local 에서 아래 옵션은 bug가 있다.
+        # .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
+        print("## Cluster Mode : True")
+        spark_builder = spark_builder.config(
+            "spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
+    else:
+        print("# Cluster Mode : False")
 
     # SparkSession 생성
     spark = spark_builder.getOrCreate()
