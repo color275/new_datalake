@@ -14,7 +14,7 @@ from airflow.providers.amazon.aws.operators.glue import GlueJobOperator
 from airflow.providers.amazon.aws.operators.glue_crawler import GlueCrawlerOperator
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
 
-dag_name = 'orders_iceberg_cdc_from_kafka'
+dag_name = 'orders_iceberg_cdc'
   
 default_args = {  
     'owner': 'airflow',
@@ -68,7 +68,7 @@ SPARK_STEPS = [
 ]
 
 step1 = EmrAddStepsOperator(
-    task_id='add_steps',
+    task_id='tranaction_merge',
     job_flow_id=EMR_CLUSTER_ID,
     aws_conn_id='aws_default',
     steps=SPARK_STEPS,
@@ -76,7 +76,7 @@ step1 = EmrAddStepsOperator(
 )
 
 step1_checker = EmrStepSensor(
-    task_id='watch_step1',
+    task_id='check_status',
     job_flow_id=EMR_CLUSTER_ID,
     step_id="{{ task_instance.xcom_pull('add_steps', key='return_value')[1] }}",
     aws_conn_id='aws_default',
