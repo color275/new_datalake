@@ -78,7 +78,7 @@ step1 = EmrAddStepsOperator(
 step1_checker = EmrStepSensor(
     task_id='check_status',
     job_flow_id=EMR_CLUSTER_ID,
-    step_id="{{ task_instance.xcom_pull('add_steps', key='return_value')[1] }}",
+    step_id="{{ task_instance.xcom_pull('tranaction_merge', key='return_value')[1] }}",
     aws_conn_id='aws_default',
     dag=dag
 )
