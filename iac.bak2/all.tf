@@ -26,7 +26,7 @@ locals {
   region = "ap-northeast-2"
   my_ip = "${chomp(data.http.my_ip.body)}/32"
 
-  vpc_cidr = "10.0.0.0/16"
+  vpc_cidr = "10.20.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 2)
 
   tags = {
@@ -58,9 +58,10 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  # enable_nat_gateway = true
-  # single_nat_gateway = true
+  enable_nat_gateway = true
+#   single_nat_gateway = true
 
+  enable_dhcp_options        = false
   # enable_dhcp_options        = true
   map_public_ip_on_launch    = true
 

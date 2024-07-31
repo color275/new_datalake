@@ -6,6 +6,7 @@ create database ecommerce;
 create user appuser@"%" identified by "appuser";
 ALTER USER  appuser@'%' IDENTIFIED WITH mysql_native_password BY 'appuser';
 grant all privileges on ecommerce.* to appuser@"%";
+GRANT REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO appuser@"%";
 
 CREATE TABLE ecommerce.customer (
   customer_id INT AUTO_INCREMENT PRIMARY KEY,
