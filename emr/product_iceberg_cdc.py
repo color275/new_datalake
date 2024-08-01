@@ -16,7 +16,7 @@ if __name__ == '__main__':
     bucket_name = "ken-datalake"
     database_name = "ecommerce"
 
-    table_name = "orders"
+    table_name = "product"
 
     source_bucket_prefix = f"dms/{database_name}/{table_name}"
     source_path = f"s3a://{bucket_name}/{source_bucket_prefix}"
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     else:
         # s3의 파티션된 최소 데이터
         # dms 에서 partition 된 포맷이 utc를 따르므로 9시간 마이너스
-        last_bookmark_time = datetime(2024, 7, 30, 11)
+        last_bookmark_time = datetime(2024, 7, 31, 20)
 
     current_time = datetime.now()
 
@@ -103,8 +103,8 @@ if __name__ == '__main__':
         print("# last_bookmark_time : ", last_bookmark_time)
         print("# current_time : ", current_time)
         cdc_partition_time = last_bookmark_time - timedelta(hours=9)
-        # next_s3_path = f's3a://chiholee-datalake0002/msk/rdb.ecommerce.orders/year={last_bookmark_time.year}/month={last_bookmark_time.month:02}/day={last_bookmark_time.day:02}/hour={last_bookmark_time.hour:02}'
-        next_s3_path = f's3a://{bucket_name}/dms/ecommerce/orders/{cdc_partition_time.year}/{cdc_partition_time.month:02}/{cdc_partition_time.day:02}/{cdc_partition_time.hour:02}'
+        # next_s3_path = f's3a://chiholee-datalake0002/msk/rdb.ecommerce.product/year={last_bookmark_time.year}/month={last_bookmark_time.month:02}/day={last_bookmark_time.day:02}/hour={last_bookmark_time.hour:02}'
+        next_s3_path = f's3a://{bucket_name}/dms/ecommerce/product/{cdc_partition_time.year}/{cdc_partition_time.month:02}/{cdc_partition_time.day:02}/{cdc_partition_time.hour:02}'
         print("## next_s3_path : ", next_s3_path)
 
         try:
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         print("## df is None, exit!")
         spark.stop()
         sys.exit(1)
-    
+
     df = df.withColumn("year", year("last_update_time")) \
         .withColumn("month", lpad(month("last_update_time"), 2, '0')) \
         .withColumn("day", lpad(dayofmonth("last_update_time"), 2, '0')) \
@@ -154,14 +154,12 @@ if __name__ == '__main__':
     # 날짜 조건이 있는 쿼리
     query = f"""
     SELECT
-        order_id,
-        promo_id,
-        order_cnt,
-        order_price,
-        order_dt,
-        last_update_time,
-        customer_id,
         product_id,
+        name,
+        img_path,
+        category,
+        price,
+        last_update_time,
         year,
         month,
         day,
@@ -169,7 +167,7 @@ if __name__ == '__main__':
     FROM (
         SELECT
             a.*,
-            ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY last_update_time DESC) as row_num
+            ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY last_update_time DESC) as row_num
         FROM v_cdc_source a
         WHERE last_update_time >= '{where_condition_time.strftime('%Y-%m-%d %H:%M:%S')}'
     ) subquery

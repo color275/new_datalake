@@ -7,7 +7,7 @@ if __name__ == '__main__':
     bucket_name = "ken-datalake"
     database_name = "ecommerce"
 
-    table_name = "orders"
+    table_name = "product"
 
     source_bucket_prefix = f"dms/{database_name}/{table_name}"
     source_path = f"s3a://{bucket_name}/{source_bucket_prefix}"
@@ -39,7 +39,7 @@ if __name__ == '__main__':
                 # "com.amazonaws:aws-java-sdk-core:1.12.725,"
                 # "com.amazona  ws:jmespath-java:1.12.725"
                 ) \
-        .appName("Orders Iceberg Full") \
+        .appName("product Iceberg Full") \
         .getOrCreate()
 
     df = spark.read \
@@ -63,19 +63,17 @@ if __name__ == '__main__':
         USING iceberg
         PARTITIONED BY (year, month, day, hour)
         AS (
-            SELECT  order_id,
-                    promo_id,
-                    order_cnt,
-                    order_price,
-                    order_dt,
+            SELECT  product_id,
+                    name,
+                    img_path,
+                    category,
+                    price,
                     last_update_time,
-                    customer_id,
-                    product_id,
                     year,
                     month,
                     day,
                     hour
-            FROM {table_name}
+            FROM {table_name} 
         )
     """)
 
