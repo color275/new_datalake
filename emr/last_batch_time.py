@@ -49,12 +49,17 @@ def get_last_bookmark(dynamodb_table, table_name) -> str :
 
 
 def set_last_bookmark(dynamodb_table, table_name, last_bookmark_time):
+    if isinstance(last_bookmark_time, datetime):
+        last_bookmark_time_str = last_bookmark_time.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        # 밀리초는 절삭
+        last_bookmark_time_str = last_bookmark_time.split('.')[0]
+
     response = dynamodb_table.update_item(
         Key={'table_name': table_name},
         UpdateExpression="SET last_bookmark_time = :last_bookmark_time, last_update_time = :last_update_time",
-        # UpdateExpression="SET StartDate = :startdate, LastProcessedDate = :lastprocesseddate",
         ExpressionAttributeValues={
-            ':last_bookmark_time': datetime.strftime(last_bookmark_time, '%Y-%m-%d %H:%M:%S'),
+            ':last_bookmark_time': last_bookmark_time_str,
             ':last_update_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         },
         ReturnValues="UPDATED_NEW"

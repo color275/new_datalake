@@ -70,7 +70,6 @@ if __name__ == '__main__':
     spark = spark_builder.getOrCreate()
 
     dynamodb_table_name = "emr_last_batch_time"
-    dynamodb_table_name = "emr_last_batch_time"
     dynamodb = boto3.client('dynamodb', region_name='ap-northeast-2')
     existing_tables = dynamodb.list_tables()['TableNames']
     if dynamodb_table_name in existing_tables:
@@ -89,7 +88,6 @@ if __name__ == '__main__':
             last_bookmark_time_str, '%Y-%m-%d %H:%M:%S')
     else:
         # s3의 파티션된 최소 데이터
-        # dms 에서 partition 된 포맷이 utc를 따르므로 9시간 마이너스
         last_bookmark_time = datetime(2024, 7, 30, 11)
 
     current_time = datetime.now()
