@@ -14,7 +14,7 @@ from airflow.providers.amazon.aws.operators.glue import GlueJobOperator
 from airflow.providers.amazon.aws.operators.glue_crawler import GlueCrawlerOperator
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
 
-dag_name = 'orders_iceberg_cdc'
+dag_name = 'accesslog_parser'
   
 default_args = {  
     'owner': 'airflow',
@@ -59,16 +59,16 @@ SPARK_STEPS = [
                     '--deploy-mode',
                     'cluster',
                     '--name',
-                    'orders_iceberg_cdc',
+                    'accesslog_parser',
                     '--py-files',
                     '/home/hadoop/last_batch_time.py',
-                    '/home/hadoop/orders_iceberg_cdc.py',]
+                    '/home/hadoop/1st_processing.py',]
       }
   }
 ]
 
 step1 = EmrAddStepsOperator(
-    task_id='tranaction_merge',
+    task_id='accesslog_parser',
     job_flow_id=EMR_CLUSTER_ID,
     aws_conn_id='aws_default',
     steps=SPARK_STEPS,
@@ -78,7 +78,7 @@ step1 = EmrAddStepsOperator(
 step1_checker = EmrStepSensor(
     task_id='check_status',
     job_flow_id=EMR_CLUSTER_ID,
-    step_id="{{ task_instance.xcom_pull('tranaction_merge', key='return_value')[1] }}",
+    step_id="{{ task_instance.xcom_pull('accesslog_parser', key='return_value')[1] }}",
     aws_conn_id='aws_default',
     dag=dag
 )

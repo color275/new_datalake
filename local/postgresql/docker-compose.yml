@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  postgres:
+    build: .
+    container_name: dbt_postgres
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Admin1234
+      TZ: 'Asia/Seoul'
+    ports:
+    - "5432:5432"
+    volumes:
+    - ./pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+    driver: local
