@@ -2,6 +2,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, year, month, dayofmonth, hour
 import time
 import sys
+import os
 
 if __name__ == '__main__':
 
@@ -23,7 +24,15 @@ if __name__ == '__main__':
     iceberg_bucket_prefix = f"source/{database_name}/"
     warehouse_path = f"s3a://{bucket_name}/{iceberg_bucket_prefix}"
 
-    spark = SparkSession.builder \
+    ###########################################################################
+    # upsert 시 필요
+    # org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+    ###########################################################################
+
+    # 실행 모드 확인
+    is_cluster_mode = os.getenv("SPARK_DEPLOY_MODE", "cluster")
+
+    spark_builder = SparkSession.builder \
         .config("spark.hadoop.fs.s3a.aws.credentials.provider", "com.amazonaws.auth.DefaultAWSCredentialsProviderChain") \
         .config(f"spark.sql.catalog.{catalog_name}", "org.apache.iceberg.spark.SparkCatalog") \
         .config(f"spark.sql.catalog.{catalog_name}.catalog-impl", "org.apache.iceberg.aws.glue.GlueCatalog") \
@@ -46,11 +55,23 @@ if __name__ == '__main__':
                 ###########################################################
                 "org.apache.hadoop:hadoop-aws:3.3.4,"
                 ) \
-        .appName("MySQL to S3") \
-        .getOrCreate()
+        .appName("MySQL to S3")
+    
+    # 클러스터 모드에서만 적용할 설정 추가
+    if is_cluster_mode == "cluster":
+        # local 에서 아래 옵션은 bug가 있다.
+        # .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
+        print("## Cluster Mode : True")
+        spark_builder = spark_builder.config(
+            "spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
+    else:
+        print("# Cluster Mode : False")
+
+    # SparkSession 생성
+    spark = spark_builder.getOrCreate()
 
     # MySQL 연결 정보
-    jdbc_url = "jdbc:mysql://localhost:3307/ecommerce"
+    jdbc_url = "jdbc:mysql://data-workshop.cluster-cgluv9lxvqft.ap-northeast-2.rds.amazonaws.com:3306/ecommerce"
     connection_properties = {
         "user": "appuser",
         "password": "appuser",
