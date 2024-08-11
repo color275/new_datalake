@@ -15,8 +15,8 @@ READONLY_PORT = os.getenv("READONLY_PORT")
 READONLY_DBNAME = os.getenv("READONLY_DBNAME")
 
 # PostgreSQL URL
-PRIMARY_DB_URL = f'postgresql+psycopg2://{DBUSER}:{PASSWORD}@{PRIMARY_HOST}:{PRIMARY_PORT}/{PRIMARY_DBNAME}?options=-c%20search_path=ecommerce'
-READONLY_DB_URL = f'postgresql+psycopg2://{DBUSER}:{PASSWORD}@{READONLY_HOST}:{READONLY_PORT}/{READONLY_DBNAME}?options=-c%20search_path=ecommerce'
+PRIMARY_DB_URL = f'postgresql+psycopg2://{DBUSER}:{PASSWORD}@{PRIMARY_HOST}:{PRIMARY_PORT}/{PRIMARY_DBNAME}?options=-c%20search_path=src'
+READONLY_DB_URL = f'postgresql+psycopg2://{DBUSER}:{PASSWORD}@{READONLY_HOST}:{READONLY_PORT}/{READONLY_DBNAME}?options=-c%20search_path=src'
 
 
 class PrimaryEngineConn:
