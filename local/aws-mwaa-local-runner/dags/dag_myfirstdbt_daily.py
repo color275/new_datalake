@@ -1,10 +1,10 @@
 import os
-from datetime import datetime
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 from cosmos import DbtTaskGroup, ProjectConfig, ProfileConfig, ExecutionConfig, RenderConfig
 from cosmos.profiles import PostgresUserPasswordProfileMapping
 import pendulum
+from datetime import datetime
 
 ## 로컬 타임존 생성
 local_tz = pendulum.timezone("Asia/Seoul")
@@ -29,6 +29,7 @@ with DAG(
     start_date=datetime(2024, 8, 9, tzinfo=local_tz),
     catchup=False,
     default_args={"retries": 0},
+    user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 ) as dag:
     
     # 완료 여부를 확인할 DummyOperator 태스크 추가

@@ -35,11 +35,12 @@ default_args = {
 }
 
 dag = DAG(
-    dag_name,                         # dag_name은 변수로, DAG의 이름을 지정합니다.
-    default_args=default_args,        # default_args는 기본 설정들을 포함한 딕셔너리입니다.
-    dagrun_timeout=timedelta(hours=2),# DAG 실행 최대 시간을 2시간으로 설정
-    schedule_interval="30 17 * * *",
-    catchup=False
+    dag_name,                         
+    default_args=default_args,        
+    dagrun_timeout=timedelta(hours=2),
+    schedule_interval="0 * * * *",
+    catchup=False,
+    user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 )
 
 S3_URI = "s3://ken-datalake/emr/src/"
@@ -67,7 +68,7 @@ SPARK_STEPS = [
                     '--name',
                     'orders_iceberg_batch',
                     '/home/hadoop/orders_iceberg_batch.py',
-                    '{{ execution_date.strftime("%Y-%m-%d %H:%M:%S") }}'
+                    '{{ local_dt(execution_date) }}'
                 ]
       }
   }

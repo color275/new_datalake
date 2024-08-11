@@ -2,6 +2,8 @@ from os import path
 from datetime import timedelta  
 import airflow  
 from airflow import DAG  
+import pendulum
+from datetime import datetime
 
 from airflow.providers.amazon.aws.operators.emr import (
     EmrAddStepsOperator,
@@ -14,12 +16,15 @@ from airflow.providers.amazon.aws.operators.glue import GlueJobOperator
 from airflow.providers.amazon.aws.operators.glue_crawler import GlueCrawlerOperator
 from airflow.providers.amazon.aws.transfers.s3_to_redshift import S3ToRedshiftOperator
 
+## 로컬 타임존 생성
+local_tz = pendulum.timezone("Asia/Seoul")
+
 dag_name = 'accesslog_parser'
   
 default_args = {  
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': airflow.utils.dates.days_ago(1),
+    'start_date': datetime(2024, 8, 10, tzinfo=local_tz),
     'retries': 0,
     'retry_delay': timedelta(minutes=2),
     'provide_context': True,
@@ -29,11 +34,12 @@ default_args = {
 }
 
 dag = DAG(
-    dag_name,                         # dag_name은 변수로, DAG의 이름을 지정합니다.
-    default_args=default_args,        # default_args는 기본 설정들을 포함한 딕셔너리입니다.
-    dagrun_timeout=timedelta(hours=2),# DAG 실행 최대 시간을 2시간으로 설정
-    schedule_interval='*/5 * * * *',  # 5분마다 실행되도록 cron 표현식 설정
-    catchup=False
+    dag_name,                         
+    default_args=default_args,        
+    dagrun_timeout=timedelta(hours=2),
+    schedule_interval='*/5 * * * *',  
+    catchup=False,
+    user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 )
 
 S3_URI = "s3://ken-datalake/emr/src/"

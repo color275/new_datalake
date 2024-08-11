@@ -1,11 +1,11 @@
 import os
-from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.sensors.external_task_sensor import ExternalTaskSensor
 from cosmos import DbtTaskGroup, ProjectConfig, ProfileConfig, ExecutionConfig, RenderConfig
 from cosmos.profiles import PostgresUserPasswordProfileMapping
 from cosmos.constants import ExecutionMode
 import pendulum
+from datetime import datetime, timedelta
 
 ## 로컬 타임존 생성
 local_tz = pendulum.timezone("Asia/Seoul")
@@ -33,6 +33,7 @@ with DAG(
     start_date=datetime(2024, 8, 9, tzinfo=local_tz),
     catchup=False,
     default_args={"retries": 0},
+    user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 ) as dag:
 
     # ExternalTaskSensor 생성
