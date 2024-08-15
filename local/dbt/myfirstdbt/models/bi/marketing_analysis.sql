@@ -1,9 +1,3 @@
-{{
-  config(
-    tags="hourly"
-  )
-}}
-
 WITH product_sales AS (
     SELECT
         o.product_id,

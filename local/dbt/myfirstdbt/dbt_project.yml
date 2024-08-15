@@ -32,19 +32,14 @@ clean-targets: # directories to be removed by `dbt clean`
 models:
   myfirstdbt:
     stg:
-      +materialized: table
-      +tags:
-      - "stg"
+      +materialized: view
     mart:
       +materialized: table
       +schema: mart
-      +tags:
-      - "mart"
     bi:
       +materialized: table
       +schema: bi
-      +tags:
-      - "bi"
 
 seeds:
   +schema: stg
+

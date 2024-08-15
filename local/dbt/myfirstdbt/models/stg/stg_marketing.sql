@@ -1,9 +1,3 @@
-{{
-  config(
-    tags="daily"
-  )
-}}
-
 WITH marketing AS (
     SELECT 
         product_id,
@@ -11,6 +5,6 @@ WITH marketing AS (
         budget,
         start_date,
         end_date
-    FROM stg.marketing
+    FROM {{source('stg','marketing')}}
 )
 SELECT * FROM marketing

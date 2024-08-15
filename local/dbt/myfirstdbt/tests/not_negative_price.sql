@@ -2,4 +2,4 @@
 -- 만약 결과가 반환되면, 테스트는 실패한 것으로 간주
 SELECT *
 FROM {{ ref('stg_orders') }}
-WHERE order_price <= 0
+WHERE order_price < 0

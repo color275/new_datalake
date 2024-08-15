@@ -1,0 +1,11 @@
+# models/src/src_source.yml
+sources:
+- name: src
+  tables:
+  - name: customer
+  - name: orders
+  - name: product
+- name: stg
+  tables:
+  - name: discount
+  - name: marketing

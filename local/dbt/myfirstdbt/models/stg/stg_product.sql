@@ -1,9 +1,3 @@
-{{
-  config(
-    tags="daily"
-  )
-}}
-
 WITH product AS (
     SELECT
         product_id,
@@ -17,8 +11,7 @@ WITH product AS (
             WHEN price <= 10000 THEN 'Low'
             WHEN price <= 20000 THEN 'Medium'
             ELSE 'High'
-        END AS price_category,
-        last_update_time
+        END AS price_category
     FROM {{source('src','product')}}
 )
 
