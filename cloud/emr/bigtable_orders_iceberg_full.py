@@ -64,6 +64,7 @@ if __name__ == '__main__':
         PARTITIONED BY (year, month, day, hour)
         AS (
             SELECT  order_id,
+                    promo_id,
                     order_cnt,
                     order_price,
                     order_dt,
