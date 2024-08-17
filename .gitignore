@@ -10,7 +10,7 @@ __pycache__/
 # C extensions
 *.so
 
-pgdata/
+**/pgdata/*
 
 # Distribution / packaging
 .Python

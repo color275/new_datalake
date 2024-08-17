@@ -20,8 +20,6 @@ if __name__ == '__main__':
         .config(f"spark.sql.catalog.{catalog_name}", "org.apache.iceberg.spark.SparkCatalog") \
         .config(f"spark.sql.catalog.{catalog_name}.catalog-impl", "org.apache.iceberg.aws.glue.GlueCatalog") \
         .config(f"spark.sql.catalog.{catalog_name}.warehouse", f"{warehouse_path}") \
-        .config("spark.default.parallelism", "20") \
-        .config("spark.sql.shuffle.partitions", "20") \
         .config("spark.jars.packages",
                 ###########################################################
                 # iceberg 를 read 하기 위한 필수 jars
