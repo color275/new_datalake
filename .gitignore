@@ -11,6 +11,8 @@ __pycache__/
 *.so
 
 **/pgdata/*
+**/nohup.*
+*.pem
 
 # Distribution / packaging
 .Python
