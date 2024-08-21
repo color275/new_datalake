@@ -31,8 +31,12 @@ clean-targets: # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   myfirstdbt:
+    +pre-hook:
+    - "{{ insert_trans_history() }}"
+    +post-hook:
+    - "{{ update_trans_history() }}"
     stg:
-      +materialized: view
+      +materialized: table
     mart:
       +materialized: table
       +schema: mart
@@ -42,4 +46,3 @@ models:
 
 seeds:
   +schema: stg
-

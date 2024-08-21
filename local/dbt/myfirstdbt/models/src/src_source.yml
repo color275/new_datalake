@@ -1,4 +1,3 @@
-# models/src/src_source.yml
 sources:
 - name: src
   tables:

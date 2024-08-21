@@ -1,3 +1,9 @@
+{{
+  config(
+    tags="daily"
+  )
+}}
+
 WITH discount AS (
     SELECT 
         product_id,

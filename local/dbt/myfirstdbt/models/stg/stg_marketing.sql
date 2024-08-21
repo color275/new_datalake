@@ -1,3 +1,9 @@
+{{
+  config(
+    tags="daily"
+  )
+}}
+
 WITH marketing AS (
     SELECT 
         product_id,

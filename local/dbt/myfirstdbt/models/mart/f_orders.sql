@@ -1,4 +1,9 @@
--- models/mart/f_orders.sql
+{{
+  config(
+    tags="hourly"
+  )
+}}
+
 WITH customer AS (
     SELECT * FROM {{ ref('stg_customer') }}
 ),
