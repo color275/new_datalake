@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: smartflow_mysql
+    environment:
+      MYSQL_DATABASE: smartflow
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: Admin1234
+      MYSQL_ROOT_PASSWORD: Admin1234
+      TZ: 'Asia/Seoul'
+    ports:
+    - "3306:3306"
+    volumes:
+    - ./mysqldata:/var/lib/mysql
+
+volumes:
+  mysqldata:
+    driver: local
