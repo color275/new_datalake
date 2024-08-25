@@ -9,7 +9,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+**/mysqldata/*
 **/pgdata/*
 **/nohup.*
 *.pem
