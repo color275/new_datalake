@@ -21,16 +21,16 @@ class BaseAdmin(admin.ModelAdmin):
 
 @admin.register(DbEnv)
 class DbEnvAdmin(BaseAdmin):
-    list_display_links = ['env_name']
-    search_fields = ('env_name',)
-    list_filter = ('env_name',)
+    list_display_links = ['db_env_name']
+    search_fields = ('db_env_name',)
+    list_filter = ('db_env_name',)
 
 
 @admin.register(DatabaseType)
 class DatabaseTypeAdmin(BaseAdmin):
-    list_display_links = ['name']
-    search_fields = ('name',)
-    list_filter = ('name',)
+    list_display_links = ['db_type_name']
+    search_fields = ('db_type_name',)
+    list_filter = ('db_type_name',)
 
 
 @admin.register(Databases)
@@ -45,6 +45,13 @@ class LoadIntervalAdmin(BaseAdmin):
     list_display_links = ['interval_type',]
     search_fields = ('interval_type',)
     list_filter = ('interval_type',)
+
+
+@admin.register(LoadMethod)
+class LoadMethodAdmin(BaseAdmin):
+    list_display_links = ['load_type',]
+    search_fields = ('load_type',)
+    list_filter = ('load_type',)
 
 
 class ColumnsInline(admin.TabularInline):
@@ -82,20 +89,20 @@ class TablesAdmin(BaseAdmin):
 
 @admin.register(DataTypes)
 class DataTypesAdmin(BaseAdmin):
-    list_display_links = ['name']
-    search_fields = ('name',)
+    list_display_links = ['datatype_name']
+    search_fields = ('datatype_name',)
     
 
 
 @admin.register(DataTypesMapping)
 class DataTypesMappingAdmin(BaseAdmin):
-    list_display_links = ['name']
-    search_fields = ('name',)
+    list_display_links = ['datatype_mapping_name']
+    search_fields = ('datatype_mapping_name',)
     
 
 
-@admin.register(Columns)
-class ColumnsAdmin(BaseAdmin):
-    list_display_links = ['column_name']
-    search_fields = ('column_name',)
+# @admin.register(Columns)
+# class ColumnsAdmin(BaseAdmin):
+#     list_display_links = ['column_name']
+#     search_fields = ('column_name',)
     

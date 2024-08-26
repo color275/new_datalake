@@ -18,7 +18,7 @@ class GetTableInfoByIntervalView(APIView):
             cursor.execute("""
 SELECT 
     d.db_name, 
-    dt.name AS db_type,
+    dt.db_type_name AS db_type,
     d.host,
     d.port,
     d.username,
@@ -27,10 +27,12 @@ SELECT
     t.table_name, 
     t.sql_where,
     li.interval_type,
-    e.env_name,
+    lm.load_type,
+    e.db_env_name AS env_name,
+    d.bucket_path,
     GROUP_CONCAT(c.column_name ORDER BY c.id) AS columns,
-    GROUP_CONCAT(dt1.name ORDER BY c.id) AS data_types,
-    GROUP_CONCAT(dt2.name ORDER BY c.id) AS data_types_mapping
+    GROUP_CONCAT(dt1.datatype_name ORDER BY c.id) AS data_types,
+    GROUP_CONCAT(dt2.datatype_mapping_name ORDER BY c.id) AS data_types_mapping
 FROM 
     sf_databases d,
     sf_database_types dt,
@@ -39,6 +41,7 @@ FROM
     sf_datatypes dt1,
     sf_datatypes_mapping dt2,
     sf_load_interval li,
+    sf_load_method lm,
     sf_db_env e
 WHERE 
     d.id_databasetype = dt.id
@@ -47,12 +50,13 @@ WHERE
     AND c.id_datatypes = dt1.id
     AND c.id_datatypes_mapping = dt2.id
     AND li.id = t.id_load_interval
-    AND d.id_dbenv = e.id  -- 운영/개발 환경 조인
+    AND lm.id = t.id_load_method
+    AND d.id_dbenv = e.id
     AND li.interval_type = %s
 GROUP BY 
-    d.db_name, dt.name, d.host, d.port, d.username, 
-    d.password, d.options, t.table_name, 
-    t.sql_where, li.interval_type, e.env_name
+    d.db_name, dt.db_type_name, d.host, d.port, d.username, 
+    d.password, d.options, t.table_name, d.bucket_path,
+    t.sql_where, li.interval_type, lm.load_type, e.db_env_name
             """, [interval_type])
 
             rows = cursor.fetchall()
