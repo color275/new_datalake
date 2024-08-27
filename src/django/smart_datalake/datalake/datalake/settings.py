@@ -89,6 +89,20 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'smartflow',
+#         'USER': 'admin',
+#         'PASSWORD': 'Admin1234',
+#         'HOST': '0.0.0.0',
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'options': '-c search_path=smartflow'
+#         }
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

@@ -30,6 +30,7 @@ SELECT
     lm.load_type,
     e.db_env_name AS env_name,
     d.bucket_path,
+    t.cdc_yn,
     GROUP_CONCAT(c.column_name ORDER BY c.id) AS columns,
     GROUP_CONCAT(dt1.datatype_name ORDER BY c.id) AS data_types,
     GROUP_CONCAT(dt2.datatype_mapping_name ORDER BY c.id) AS data_types_mapping
@@ -54,7 +55,7 @@ WHERE
     AND d.id_dbenv = e.id
     AND li.interval_type = %s
 GROUP BY 
-    d.db_name, dt.db_type_name, d.host, d.port, d.username, 
+    d.db_name, dt.db_type_name, d.host, d.port, d.username, t.cdc_yn,
     d.password, d.options, t.table_name, d.bucket_path,
     t.sql_where, li.interval_type, lm.load_type, e.db_env_name
             """, [interval_type])
