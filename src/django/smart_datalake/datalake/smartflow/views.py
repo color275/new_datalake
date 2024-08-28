@@ -40,7 +40,7 @@ SELECT
     t.cdc_yn,
     GROUP_CONCAT(c.column_name ORDER BY c.id) AS columns,
     GROUP_CONCAT(IF(c.pk_yn = 'Y', c.column_name, NULL) ORDER BY c.id) AS primary_keys,
-    GROUP_CONCAT(IF(c.partition_yn = 'Y', c.column_name, NULL) ORDER BY c.id) AS partition_columns,
+    COALESCE(GROUP_CONCAT(IF(c.partition_yn = 'Y', c.column_name, NULL) ORDER BY c.id), '') AS partition_columns,
     GROUP_CONCAT(dt1.datatype_name ORDER BY c.id) AS data_types
 FROM 
     sf_databases d
