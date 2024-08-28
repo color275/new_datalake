@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import *
 import datetime
+from django.contrib import messages
+from django.core.exceptions import ValidationError
 
 
 class BaseAdmin(admin.ModelAdmin):
@@ -70,14 +72,33 @@ class TablesAdmin(BaseAdmin):
 
     def save_related(self, request, form, formsets, change):
         form.save(commit=False)
+
+        has_primary_key = False
         for formset in formsets:
             instances = formset.save(commit=False)
             for instance in instances:
+                if instance.pk_yn == 'Y':
+                    has_primary_key = True  # Set flag if a primary key is found in the current formset
                 instance.id_mod_user = request.user
                 instance.mod_dtm = datetime.datetime.now()
                 instance.save()
             formset.save_m2m()
+
+        has_primary_key = Columns.objects.filter(
+            id_table=form.instance, pk_yn='Y').exists()
+        # Check if at least one primary key exists
+        if not has_primary_key:
+            # Show error message and do not save the form
+            messages.error(
+                request, f"DB '{form.instance.id_db.db_name}'의 테이블 '{form.instance.table_name}'에 Primary Key가 지정되지 않았습니다. 확인하세요.")
+
         form.save_m2m()
+
+
+    # def save_model(self, request, obj, form, change):
+    #     obj.id_mod_user = request.user
+    #     obj.mod_dtm = datetime.datetime.now()
+    #     obj.save()
 
     # def save_model(self, request, obj, form, change):
     #     if change:

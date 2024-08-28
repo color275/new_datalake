@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django import forms
 
 
 class BaseModel(models.Model):
@@ -22,8 +23,8 @@ class DbEnv(BaseModel):
     db_env_name = models.CharField('운영/테스트/개발', max_length=100)
 
     class Meta:
-        verbose_name = '[DB] 운영/테스트/개발'
-        verbose_name_plural = '[DB] 운영/테스트/개발'
+        verbose_name = '[코드] 운영/테스트/개발'
+        verbose_name_plural = '[코드] 운영/테스트/개발'
         db_table = 'sf_db_env'
 
     def __str__(self):
@@ -34,8 +35,8 @@ class DatabaseType(BaseModel):
     db_type_name = models.CharField('DB 종류', max_length=100, unique=True)
 
     class Meta:
-        verbose_name = '[DB] 데이터베이스 종류'
-        verbose_name_plural = '[DB] 데이터베이스 종류'
+        verbose_name = '[코드] 데이터베이스 종류'
+        verbose_name_plural = '[코드] 데이터베이스 종류'
         db_table = 'sf_database_types'
 
     def __str__(self):
@@ -59,10 +60,12 @@ class Databases(BaseModel):
     password = models.CharField('비밀번호', max_length=100)
     options = models.JSONField('추가 옵션', blank=True, null=True)
     bucket_path = models.CharField('bucket경로', max_length=300)
+    cdc_bucket_path = models.CharField(
+        'CDC bucket경로', max_length=300, blank=True, null=True)
 
     class Meta:
-        verbose_name = '[DB] 데이터베이스'
-        verbose_name_plural = '[DB] 데이터베이스'
+        verbose_name = '대상 데이터베이스 리스트'
+        verbose_name_plural = '대상 데이터베이스 리스트'
         db_table = 'sf_databases'
 
     def __str__(self):
@@ -74,8 +77,8 @@ class LoadInterval(BaseModel):
         '스케줄 타입', max_length=100)
 
     class Meta:
-        verbose_name = '[스케줄] 로드 주기'
-        verbose_name_plural = '[스케줄] 로드 주기'
+        verbose_name = '[코드] 로드 주기'
+        verbose_name_plural = '[코드] 로드 주기'
         db_table = 'sf_load_interval'
 
     def __str__(self):
@@ -87,8 +90,8 @@ class LoadMethod(BaseModel):
         '로드 방법', max_length=100)
 
     class Meta:
-        verbose_name = '[스케줄] 로드 방법'
-        verbose_name_plural = '[스케줄] 로드 방법'
+        verbose_name = '[코드] 로드 방법'
+        verbose_name_plural = '[코드] 로드 방법'
         db_table = 'sf_load_method'
 
     def __str__(self):
@@ -103,6 +106,10 @@ class Tables(BaseModel):
                               null=True,
                               default=7)
     table_name = models.CharField('테이블 물리명', max_length=100)
+    catalog_db_name = models.CharField(
+        'Catalog DB명', max_length=100, blank=True, null=True)
+    catalog_table_name = models.CharField(
+        'Catalog Table명', max_length=100, blank=True, null=True)
     comments = models.CharField(
         '테이블 논리명', max_length=200, blank=True, null=True)
     id_load_interval = models.ForeignKey(LoadInterval,
@@ -120,11 +127,21 @@ class Tables(BaseModel):
     cdc_yn = models.CharField('CDC 여부', max_length=1, choices=[
                               ('Y', 'Yes'), ('N', 'No')], default='N')
     sql_where = models.TextField('SQL WHERE 절', blank=True, null=True)
+    spark_num_executors = models.BigIntegerField(
+        'spark : num-executors', default=1)
+    spark_executor_cores = models.BigIntegerField(
+        'spark : executor-cores', default=1)
+    spark_executor_memory = models.BigIntegerField(
+        'spark : executor-memory(gb)', default=4)
+    spark_numpartitions = models.BigIntegerField(
+        'spark : numpartitions', default=1)
 
     class Meta:
-        verbose_name = '[DB] 테이블'
-        verbose_name_plural = '[DB] 테이블'
+        verbose_name = '대상 테이블 리스트'
+        verbose_name_plural = '대상 테이블 리스트'
         db_table = 'sf_tables'
+
+    
 
     def __str__(self):
         return self.table_name
@@ -134,8 +151,8 @@ class DataTypes(BaseModel):
     datatype_name = models.CharField('데이터 타입 명', max_length=50, unique=True)
 
     class Meta:
-        verbose_name = '[DB] 데이터 타입'
-        verbose_name_plural = '[DB] 데이터 타입'
+        verbose_name = '[코드] 데이터 타입'
+        verbose_name_plural = '[코드] 데이터 타입'
         db_table = 'sf_datatypes'
 
     def __str__(self):
@@ -146,8 +163,8 @@ class DataTypesMapping(BaseModel):
     datatype_mapping_name = models.CharField('데이터 타입 명', max_length=50, unique=True)
 
     class Meta:
-        verbose_name = '[DB] 매핑 데이터 타입'
-        verbose_name_plural = '[DB] 매핑 데이터 타입'
+        verbose_name = '[코드] 매핑 데이터 타입'
+        verbose_name_plural = '[코드] 매핑 데이터 타입'
         db_table = 'sf_datatypes_mapping'
 
     def __str__(self):
@@ -160,6 +177,10 @@ class Columns(BaseModel):
                                  on_delete=models.DO_NOTHING,
                                  db_column='id_table')
     column_name = models.CharField('컬럼 물리명', max_length=100)
+    pk_yn = models.CharField('PK 여부', max_length=1, choices=[
+                              ('Y', 'Yes'), ('N', 'No')], default='N')
+    partition_yn = models.CharField('Partition 여부', max_length=1, choices=[
+        ('Y', 'Yes'), ('N', 'No')], default='N')
     id_datatypes = models.ForeignKey(DataTypes,
                                      verbose_name='데이터 타입',
                                      on_delete=models.DO_NOTHING,
@@ -172,8 +193,8 @@ class Columns(BaseModel):
         '컬럼 논리명', max_length=200, blank=True, null=True)
 
     class Meta:
-        verbose_name = '[DB] 컬럼'
-        verbose_name_plural = '[DB] 컬럼'
+        verbose_name = '대상 컬럼 리스트'
+        verbose_name_plural = '대상 컬럼 리스트'
         db_table = 'sf_columns'
 
     def __str__(self):
