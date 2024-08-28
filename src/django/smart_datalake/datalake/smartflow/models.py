@@ -185,10 +185,10 @@ class Columns(BaseModel):
                                      verbose_name='데이터 타입',
                                      on_delete=models.DO_NOTHING,
                                      db_column='id_datatypes')
-    id_datatypes_mapping = models.ForeignKey(DataTypesMapping,
-                                             verbose_name='매핑 타입',
-                                             on_delete=models.DO_NOTHING,
-                                             db_column='id_datatypes_mapping')
+    # id_datatypes_mapping = models.ForeignKey(DataTypesMapping,
+    #                                          verbose_name='매핑 타입',
+    #                                          on_delete=models.DO_NOTHING,
+    #                                          db_column='id_datatypes_mapping')
     comments = models.CharField(
         '컬럼 논리명', max_length=200, blank=True, null=True)
 

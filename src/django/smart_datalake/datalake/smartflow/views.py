@@ -30,34 +30,36 @@ SELECT
     lm.load_type,
     e.db_env_name AS env_name,
     d.bucket_path,
+    d.cdc_bucket_path,
+    t.catalog_db_name,
+    t.catalog_table_name,
+    t.spark_num_executors,
+    t.spark_executor_cores,
+    t.spark_executor_memory,
+    t.spark_numpartitions,
     t.cdc_yn,
     GROUP_CONCAT(c.column_name ORDER BY c.id) AS columns,
-    GROUP_CONCAT(dt1.datatype_name ORDER BY c.id) AS data_types,
-    GROUP_CONCAT(dt2.datatype_mapping_name ORDER BY c.id) AS data_types_mapping
+    GROUP_CONCAT(IF(c.pk_yn = 'Y', c.column_name, NULL) ORDER BY c.id) AS primary_keys,
+    GROUP_CONCAT(IF(c.partition_yn = 'Y', c.column_name, NULL) ORDER BY c.id) AS partition_columns,
+    GROUP_CONCAT(dt1.datatype_name ORDER BY c.id) AS data_types
 FROM 
-    sf_databases d,
-    sf_database_types dt,
-    sf_tables t,
-    sf_columns c,
-    sf_datatypes dt1,
-    sf_datatypes_mapping dt2,
-    sf_load_interval li,
-    sf_load_method lm,
-    sf_db_env e
+    sf_databases d
+    JOIN sf_database_types dt ON d.id_databasetype = dt.id
+    JOIN sf_tables t ON d.id = t.id_db
+    JOIN sf_columns c ON t.id = c.id_table
+    JOIN sf_datatypes dt1 ON c.id_datatypes = dt1.id
+    JOIN sf_load_interval li ON li.id = t.id_load_interval
+    JOIN sf_load_method lm ON lm.id = t.id_load_method
+    JOIN sf_db_env e ON d.id_dbenv = e.id
 WHERE 
-    d.id_databasetype = dt.id
-    AND d.id = t.id_db
-    AND t.id = c.id_table
-    AND c.id_datatypes = dt1.id
-    AND c.id_datatypes_mapping = dt2.id
-    AND li.id = t.id_load_interval
-    AND lm.id = t.id_load_method
-    AND d.id_dbenv = e.id
-    AND li.interval_type = %s
+    li.interval_type = %s
 GROUP BY 
-    d.db_name, dt.db_type_name, d.host, d.port, d.username, t.cdc_yn,
-    d.password, d.options, t.table_name, d.bucket_path,
-    t.sql_where, li.interval_type, lm.load_type, e.db_env_name
+    d.db_name, dt.db_type_name, d.host, d.port, d.username, 
+    d.password, d.options, t.table_name, d.bucket_path, d.cdc_bucket_path, 
+    t.sql_where, li.interval_type, lm.load_type, e.db_env_name, 
+    t.catalog_db_name, t.catalog_table_name, 
+    t.spark_num_executors, t.spark_executor_cores, 
+    t.spark_executor_memory, t.spark_numpartitions, t.cdc_yn
             """, [interval_type])
 
             rows = cursor.fetchall()
@@ -67,9 +69,9 @@ GROUP BY
             # 컬럼, 소스 데이터 타입, 매핑된 데이터 타입을 리스트로 변환
             for row in result:
                 row['columns'] = row['columns'].split(',')
+                row['primary_keys'] = row['primary_keys'].split(',')
+                row['partition_columns'] = row['partition_columns'].split(',')
                 row['data_types'] = row['data_types'].split(',')
-                row['data_types_mapping'] = row['data_types_mapping'].split(
-                    ',')
 
         return Response(result)
 

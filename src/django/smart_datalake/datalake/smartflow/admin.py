@@ -12,7 +12,8 @@ class BaseAdmin(admin.ModelAdmin):
         self.list_display = [
             field for field in all_fields if field not in priority_fields] + priority_fields
         self.fields = [field for field in all_fields if field not in [
-            'id', 'mod_dtm', 'id_mod_user']]
+            'id', 'mod_dtm', 'id_mod_user']]       
+        
         super().__init__(model, admin_site)
 
     def save_model(self, request, obj, form, change):
@@ -76,9 +77,13 @@ class TablesAdmin(BaseAdmin):
         has_primary_key = False
         for formset in formsets:
             instances = formset.save(commit=False)
+            # 삭제된 객체 처리
+            for deleted_instance in formset.deleted_objects:
+                deleted_instance.delete()
             for instance in instances:
+                instance.column_name = instance.column_name.lower()
                 if instance.pk_yn == 'Y':
-                    has_primary_key = True  # Set flag if a primary key is found in the current formset
+                    has_primary_key = True
                 instance.id_mod_user = request.user
                 instance.mod_dtm = datetime.datetime.now()
                 instance.save()
@@ -86,27 +91,18 @@ class TablesAdmin(BaseAdmin):
 
         has_primary_key = Columns.objects.filter(
             id_table=form.instance, pk_yn='Y').exists()
-        # Check if at least one primary key exists
+
         if not has_primary_key:
-            # Show error message and do not save the form
             messages.error(
                 request, f"DB '{form.instance.id_db.db_name}'의 테이블 '{form.instance.table_name}'에 Primary Key가 지정되지 않았습니다. 확인하세요.")
 
         form.save_m2m()
 
-
-    # def save_model(self, request, obj, form, change):
-    #     obj.id_mod_user = request.user
-    #     obj.mod_dtm = datetime.datetime.now()
-    #     obj.save()
-
-    # def save_model(self, request, obj, form, change):
-    #     if change:
-    #         obj.id_mod_user = request.user
-    #         obj.mod_dtm = datetime.datetime.now()
-    #     else:
-    #         obj.id_reg_user = request.user
-    #     obj.save()
+    def save_model(self, request, obj, form, change):
+        obj.table_name = obj.table_name.lower()
+        obj.id_mod_user = request.user
+        obj.mod_dtm = datetime.datetime.now()
+        super().save_model(request, obj, form, change)
 
 @admin.register(DataTypes)
 class DataTypesAdmin(BaseAdmin):
