@@ -43,7 +43,7 @@ with DAG(
         external_task_id='end',
         allowed_states=['success'],
         # execution_delta=timedelta(minutes=1),
-        execution_date_fn=prev_execution_dt,
+        # execution_date_fn=prev_execution_dt,
         mode='poke',
         dag=dag,
     )
