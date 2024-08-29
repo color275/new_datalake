@@ -1,7 +1,0 @@
-sources:
-- name: src
-  tables:
-  - name: customer
-  - name: orders
-  - name: product
-  - name: weights

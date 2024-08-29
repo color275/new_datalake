@@ -42,7 +42,7 @@ models:
     description: "총 주문 금액"
 
 - name: stg_customer
-  description: "고객 정보를 담고 있는 스테이징 테이블"
+  description: "{{ doc('stg_customer') }}"
   columns:
   - name: customer_id
     description: "기본 키"
@@ -74,7 +74,7 @@ models:
     description: "전화번호의 국가 코드"
 
 - name: stg_product
-  description: "제품 정보를 담고 있는 스테이징 테이블"
+  description: "{{ doc('stg_product') }}"
   columns:
   - name: product_id
     description: "기본 키"
