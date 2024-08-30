@@ -1,0 +1,112 @@
+version: 2
+
+models:
+- name: stg_orders
+  description: "주문 정보를 담고 있는 스테이징 테이블"
+  columns:
+  - name: order_id
+    description: "기본 키"
+    tests:
+    - unique
+    - not_null
+  - name: promo_id
+    description: "주문과 연관된 프로모션 ID"
+  - name: order_cnt
+    description: "주문 항목 수"
+    tests:
+    - not_null
+    - not_negative
+  - name: order_price
+    description: "주문 총액"
+    tests:
+    - not_null
+  - name: order_dt
+    description: "주문이 발생한 날짜 및 시간"
+    tests:
+    - not_null
+  - name: customer_id
+    description: "주문을 한 고객의 ID"
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_customer')
+        field: customer_id
+  - name: product_id
+    description: "주문 항목의 제품 ID"
+    tests:
+    - not_null
+    - relationships:
+        to: ref('stg_product')
+        field: product_id
+  - name: total_order_value
+    description: "총 주문 금액"
+
+- name: stg_customer
+  description: "{{ doc('stg_customer') }}"
+  columns:
+  - name: customer_id
+    description: "기본 키"
+    tests:
+    - unique
+    - not_null
+  - name: username
+    description: "사용자 이름"
+    tests:
+    - unique
+    - not_null
+  - name: first_name
+    description: "고객의 이름"
+    tests:
+    - not_null
+  - name: last_name
+    description: "고객의 성"
+    tests:
+    - not_null
+  - name: email
+    description: "고객의 이메일 주소"
+    tests:
+    - not_null
+  - name: full_name
+    description: "고객의 전체 이름"
+  - name: signup_year
+    description: "가입 연도"
+  - name: country_code
+    description: "전화번호의 국가 코드"
+
+- name: stg_product
+  description: "{{ doc('stg_product') }}"
+  columns:
+  - name: product_id
+    description: "기본 키"
+    tests:
+    - unique
+    - not_null
+  - name: name
+    description: "제품 이름"
+    tests:
+    - not_null
+  - name: category
+    description: "제품 카테고리"
+  - name: price
+    description: "제품 가격"
+    tests:
+    - not_null
+  - name: upper_category
+    description: "대문자로 변환된 카테고리"
+  - name: price_category
+    description: "가격 범주"
+
+- name: stg_weights
+  description: "제품 가중치 정보를 담고 있는 스테이징 테이블"
+  columns:
+  - name: product_id
+    description: "제품 ID"
+    tests:
+    - unique
+    - not_null
+  - name: products_weight
+    description: "제품의 가중치"
+  - name: basket_weight
+    description: "장바구니 가중치"
+  - name: order_weight
+    description: "주문 가중치"
