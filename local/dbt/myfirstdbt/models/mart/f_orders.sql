@@ -1,8 +1,10 @@
 {{
   config(
-    tags="hourly"
+    tags="daily"
   )
 }}
+
+{% set start_date = var('start_date', '2022-01-01') %}
 
 WITH customer AS (
     SELECT * FROM {{ ref('stg_customer') }}
@@ -16,6 +18,7 @@ product AS (
 
 -- 주문 정보 요약 테이블 생성
 SELECT 
+    '{{ start_date }}' AS start_date,
     orders.order_dt AS order_dt,
     product.product_id,
     product.name AS product_name,

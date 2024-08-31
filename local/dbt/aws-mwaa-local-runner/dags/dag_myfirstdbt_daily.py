@@ -22,13 +22,21 @@ execution_config = ExecutionConfig(
     dbt_executable_path=f"{os.environ['AIRFLOW_HOME']}/dbt_venv/bin/dbt",
 )
 
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': True,  # 이전 날짜의 동일한 태스크가 완료되어야 실행
+    'retries': 1,
+}
+
 # 일반 DAG 생성
 with DAG(
-    dag_id="myfirstdbt_daily",
-    schedule_interval="30 12 * * *",
-    start_date=datetime(2024, 8, 9, tzinfo=local_tz),
-    catchup=False,
-    default_args={"retries": 0},
+    dag_id="myfirstdbt_daily3",
+    default_args=default_args,
+    schedule_interval="42 0 * * *",
+    start_date=datetime(2024, 8, 20, tzinfo=local_tz),
+    catchup=True,
+    max_active_runs=1,
+    concurrency=1,
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(
         local_tz).strftime("%Y-%m-%d %H:%M:%S")},
 ) as dag:
@@ -42,6 +50,7 @@ with DAG(
         group_id="dbt_tasks",
         project_config=ProjectConfig(
             dbt_project_path="/usr/local/airflow/dags/dbt/myfirstdbt",
+            dbt_vars={"start_date": '{{ ds_nodash }}'},
         ),
         profile_config=profile_config,
         execution_config=execution_config,
