@@ -30,15 +30,23 @@ default_args = {
 
 # 일반 DAG 생성
 with DAG(
-    dag_id="myfirstdbt_daily3",
+    dag_id="myfirstdbt_daily8",
     default_args=default_args,
     schedule_interval="42 0 * * *",
     start_date=datetime(2024, 8, 20, tzinfo=local_tz),
     catchup=True,
     max_active_runs=1,
     concurrency=1,
-    user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(
-        local_tz).strftime("%Y-%m-%d %H:%M:%S")},
+    user_defined_macros={
+        'local_dt': lambda execution_date: execution_date.in_timezone(
+            local_tz).strftime("%Y-%m-%d %H:%M:%S"),
+        'data_interval_start_plus_9h': lambda data_interval_start: (
+            (pendulum.parse(data_interval_start) + pendulum.duration(hours=9)).in_tz(local_tz)
+        ).to_iso8601_string(),
+        'data_interval_end_plus_9h': lambda data_interval_end: (
+            (pendulum.parse(data_interval_end) + pendulum.duration(hours=9)).in_tz(local_tz)
+        ).to_iso8601_string(),
+    }
 ) as dag:
 
     # 완료 여부를 확인할 DummyOperator 태스크 추가
@@ -50,7 +58,10 @@ with DAG(
         group_id="dbt_tasks",
         project_config=ProjectConfig(
             dbt_project_path="/usr/local/airflow/dags/dbt/myfirstdbt",
-            dbt_vars={"start_date": '{{ ds_nodash }}'},
+            dbt_vars={
+                "data_interval_start": '{{ data_interval_start_plus_9h }}',
+                "data_interval_end": '{{ data_interval_end_plus_9h }}'
+            },
         ),
         profile_config=profile_config,
         execution_config=execution_config,
