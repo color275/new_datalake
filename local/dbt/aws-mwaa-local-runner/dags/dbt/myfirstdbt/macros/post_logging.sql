@@ -1,4 +1,5 @@
 {% macro update_trans_history() %}
+
 UPDATE src.trans_history 
 SET status = 'done',
     rowcount = (SELECT COUNT(*) FROM {{ this }}),

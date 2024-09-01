@@ -30,9 +30,9 @@ def prev_execution_dt(dt, **kwargs):
 
 # 일반 DAG 생성
 with DAG(
-    dag_id="myfirstdbt_hourly",
+    dag_id="myfirstdbt_hourly3",
     schedule_interval="*/2 * * * *",
-    start_date=datetime(2024, 9, 1, 10, 27, tzinfo=local_tz),
+    start_date=datetime(2024, 9, 1, 17, 52, tzinfo=local_tz),
     catchup=False,
     default_args={"retries": 0},
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(
@@ -40,16 +40,16 @@ with DAG(
 ) as dag:
 
     # ExternalTaskSensor 생성
-    wait_for_daily = ExternalTaskSensor(
-        task_id='wait_for_daily',
-        external_dag_id='myfirstdbt_daily',
-        external_task_id='end',
-        allowed_states=['success'],
-        # execution_delta=timedelta(minutes=1),
-        # execution_date_fn=prev_execution_dt,
-        mode='poke',
-        dag=dag,
-    )
+    # wait_for_daily = ExternalTaskSensor(
+    #     task_id='wait_for_daily',
+    #     external_dag_id='myfirstdbt_daily',
+    #     external_task_id='end',
+    #     allowed_states=['success'],
+    #     # execution_delta=timedelta(minutes=1),
+    #     # execution_date_fn=prev_execution_dt,
+    #     mode='poke',
+    #     dag=dag,
+    # )
 
     # DbtTaskGroup 생성
     dbt_task_group = DbtTaskGroup(
@@ -69,4 +69,5 @@ with DAG(
     )
 
     # 태스크 의존성 설정
-    wait_for_daily >> dbt_task_group
+    # wait_for_daily >> dbt_task_group
+    dbt_task_group

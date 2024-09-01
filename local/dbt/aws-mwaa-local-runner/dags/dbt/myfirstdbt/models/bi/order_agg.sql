@@ -4,12 +4,6 @@
   )
 }}
 
-{{ 
-  config(
-    pre_hook = "{{ insert_trans_history() }}",
-    post_hook = "{{ update_trans_history() }}"
-  ) 
-}}
 
 SELECT 
     p.name AS product_name,

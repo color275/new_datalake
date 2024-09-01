@@ -3,6 +3,7 @@ import time
 from datetime import datetime, timedelta
 import psycopg2.extras
 import random
+import sys
 
 # 데이터베이스 연결 설정
 conn = psycopg2.connect(
@@ -15,16 +16,12 @@ conn = psycopg2.connect(
 cur = conn.cursor()
 
 # 최대 order_id 조회
-
-
 def get_max_order_id():
     cur.execute("SELECT COALESCE(MAX(order_id), 0) FROM src.orders")
     max_order_id = cur.fetchone()[0]
     return max_order_id
 
 # 초당 삽입할 데이터 건수 설정
-
-
 def insert_bulk_data(batch_size):
     order_id_start = get_max_order_id() + 1  # 최대 order_id의 다음 번호부터 시작
 
@@ -88,16 +85,20 @@ def insert_bulk_data(batch_size):
         print(
             f"Inserted: {insert_count}, Updated: {update_count}, Deleted: {delete_count}")
 
+# 실행 시 batch_size 값을 파라미터로 받음
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python script_name.py <batch_size>")
+        sys.exit(1)
 
-# 데이터 삽입 시작
-try:
-    batch_size = 100  # 이 값을 조정하여 초당 삽입할 데이터 건수 설정
-    insert_bulk_data(batch_size)
-except KeyboardInterrupt:
-    print("데이터 삽입 중단")
-finally:
-    cur.close()
-    conn.close()
+    batch_size = int(sys.argv[1])  # batch_size 값을 실행 시 파라미터로 받음
+    try:
+        insert_bulk_data(batch_size)
+    except KeyboardInterrupt:
+        print("데이터 삽입 중단")
+    finally:
+        cur.close()
+        conn.close()
 
 
 
