@@ -64,7 +64,8 @@ def insert_bulk_data(batch_size):
             product_id = random.randint(1, 20)
 
             action = random.choices(
-                ["insert", "update", "delete"], weights=[80, 18, 2], k=1)[0]
+                ["insert", "update", "delete"], weights=[50, 50, 0], k=1)[0]
+                # ["insert", "update", "delete"], weights=[80, 18, 2], k=1)[0]
 
             if action == "insert":
                 values.append((order_id, promo_id, order_cnt, order_price,
