@@ -31,8 +31,8 @@ def prev_execution_dt(dt, **kwargs):
 # 일반 DAG 생성
 with DAG(
     dag_id="myfirstdbt_hourly",
-    schedule_interval="30 12 * * *",
-    start_date=datetime(2024, 8, 9, tzinfo=local_tz),
+    schedule_interval="*/2 * * * *",
+    start_date=datetime(2024, 9, 1, 10, 27, tzinfo=local_tz),
     catchup=False,
     default_args={"retries": 0},
     user_defined_macros={'local_dt': lambda execution_date: execution_date.in_timezone(

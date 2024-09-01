@@ -30,22 +30,16 @@ default_args = {
 
 # 일반 DAG 생성
 with DAG(
-    dag_id="myfirstdbt_daily14",
+    dag_id="myfirstdbt_daily",
     default_args=default_args,
-    schedule_interval="* * * * *",
+    schedule_interval="*/2 * * * *",
     start_date=datetime(2024, 9, 1, 10, 27, tzinfo=local_tz),
-    catchup=True,
-    max_active_runs=1,
-    concurrency=5,
+    catchup=False,
+    max_active_runs=10,
+    concurrency=10,
     user_defined_macros={
         'local_dt': lambda execution_date: execution_date.in_timezone(
             local_tz).strftime("%Y-%m-%d %H:%M:%S"),
-        # 'data_interval_start_plus_9h': lambda data_interval_start: (
-        #     (pendulum.parse(data_interval_start) + pendulum.duration(hours=9)).in_tz(local_tz)
-        # ).to_iso8601_string(),
-        # 'data_interval_end_plus_9h': lambda data_interval_end: (
-        #     (pendulum.parse(data_interval_end) + pendulum.duration(hours=9)).in_tz(local_tz)
-        # ).to_iso8601_string(),
     }
 ) as dag:
 
@@ -65,7 +59,6 @@ with DAG(
                 "data_interval_end": '{{ data_interval_end }}'
             },
         ),
-        # dt_plus_9 = (datetime.fromisoformat('{{ data_interval_start }}') + timedelta(hours=9))
         profile_config=profile_config,
         execution_config=execution_config,
         render_config=RenderConfig(
