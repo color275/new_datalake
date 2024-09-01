@@ -1,6 +1,6 @@
 {{
   config(
-    tags="daily"
+    tags="hourly"
   )
 }}
 
