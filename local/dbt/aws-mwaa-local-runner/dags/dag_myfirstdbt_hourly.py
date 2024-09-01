@@ -56,6 +56,10 @@ with DAG(
         group_id="dbt_tasks",
         project_config=ProjectConfig(
             dbt_project_path="/usr/local/airflow/dags/dbt/myfirstdbt",
+            dbt_vars={
+                "data_interval_start": '{{ data_interval_start }}',
+                "data_interval_end": '{{ data_interval_end }}'
+            },
         ),
         profile_config=profile_config,
         execution_config=execution_config,

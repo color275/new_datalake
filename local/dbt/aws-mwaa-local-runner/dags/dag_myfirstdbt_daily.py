@@ -4,7 +4,7 @@ from airflow.operators.dummy import DummyOperator
 from cosmos import DbtTaskGroup, ProjectConfig, ProfileConfig, ExecutionConfig, RenderConfig
 from cosmos.profiles import PostgresUserPasswordProfileMapping
 import pendulum
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # 로컬 타임존 생성
 local_tz = pendulum.timezone("Asia/Seoul")
@@ -30,22 +30,22 @@ default_args = {
 
 # 일반 DAG 생성
 with DAG(
-    dag_id="myfirstdbt_daily8",
+    dag_id="myfirstdbt_daily14",
     default_args=default_args,
-    schedule_interval="42 0 * * *",
-    start_date=datetime(2024, 8, 20, tzinfo=local_tz),
+    schedule_interval="* * * * *",
+    start_date=datetime(2024, 9, 1, 10, 27, tzinfo=local_tz),
     catchup=True,
     max_active_runs=1,
-    concurrency=1,
+    concurrency=5,
     user_defined_macros={
         'local_dt': lambda execution_date: execution_date.in_timezone(
             local_tz).strftime("%Y-%m-%d %H:%M:%S"),
-        'data_interval_start_plus_9h': lambda data_interval_start: (
-            (pendulum.parse(data_interval_start) + pendulum.duration(hours=9)).in_tz(local_tz)
-        ).to_iso8601_string(),
-        'data_interval_end_plus_9h': lambda data_interval_end: (
-            (pendulum.parse(data_interval_end) + pendulum.duration(hours=9)).in_tz(local_tz)
-        ).to_iso8601_string(),
+        # 'data_interval_start_plus_9h': lambda data_interval_start: (
+        #     (pendulum.parse(data_interval_start) + pendulum.duration(hours=9)).in_tz(local_tz)
+        # ).to_iso8601_string(),
+        # 'data_interval_end_plus_9h': lambda data_interval_end: (
+        #     (pendulum.parse(data_interval_end) + pendulum.duration(hours=9)).in_tz(local_tz)
+        # ).to_iso8601_string(),
     }
 ) as dag:
 
@@ -53,16 +53,19 @@ with DAG(
     start = DummyOperator(task_id='start')
     end = DummyOperator(task_id='end')
 
+
+
     # DbtTaskGroup 생성
     dbt_task_group = DbtTaskGroup(
         group_id="dbt_tasks",
         project_config=ProjectConfig(
             dbt_project_path="/usr/local/airflow/dags/dbt/myfirstdbt",
             dbt_vars={
-                "data_interval_start": '{{ data_interval_start_plus_9h }}',
-                "data_interval_end": '{{ data_interval_end_plus_9h }}'
+                "data_interval_start": '{{ data_interval_start }}',
+                "data_interval_end": '{{ data_interval_end }}'
             },
         ),
+        # dt_plus_9 = (datetime.fromisoformat('{{ data_interval_start }}') + timedelta(hours=9))
         profile_config=profile_config,
         execution_config=execution_config,
         render_config=RenderConfig(

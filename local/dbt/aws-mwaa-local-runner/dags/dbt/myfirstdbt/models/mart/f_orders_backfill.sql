@@ -3,12 +3,13 @@
     materialized='incremental',
     unique_key=['order_dt','product_id'],
     incremental_strategy='delete+insert',
-    tags="daily"
+    tags="hourly"
   )
 }}
 
-{% set data_interval_start = var('data_interval_start') %}
-{% set data_interval_end = var('data_interval_end') %}
+{% set data_interval_start = to_kst_str(var('data_interval_start', 'today_00:00')) %}
+{% set data_interval_end = to_kst_str(var('data_interval_end', 'tomorrow_00:00')) %}
+
 
 WITH customer AS (
     SELECT * FROM {{ ref('stg_customer') }}
@@ -22,7 +23,6 @@ product AS (
 
 {% if not is_incremental() %}
 
--- 초기 로딩 시 전체 데이터를 가져옴
 SELECT 
     orders.order_dt AS order_dt,
     product.product_id,
@@ -60,7 +60,8 @@ FROM orders
 JOIN customer ON orders.customer_id = customer.customer_id
 JOIN product ON orders.product_id = product.product_id
 WHERE 
-    orders.last_update_time BETWEEN '{{ data_interval_start }}' AND '{{ data_interval_end }}'
+        orders.last_update_time >= {{ data_interval_start }}
+    AND orders.last_update_time < {{ data_interval_end }}
 GROUP BY 
     orders.order_dt,
     product.product_id,
