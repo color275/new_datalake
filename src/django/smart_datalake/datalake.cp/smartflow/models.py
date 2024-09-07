@@ -47,7 +47,7 @@ class Databases(BaseModel):
                                  verbose_name="운영/테스트/개발",
                                  on_delete=models.DO_NOTHING,
                                  db_column='id_dbenv')
-    db_name = models.CharField('이름(SMTC,WEBDB)', max_length=100)
+    db_name = models.CharField('DB명', max_length=100)
     id_databasetype = models.ForeignKey(DatabaseType,
                                 verbose_name="DB 종류",
                                 on_delete=models.DO_NOTHING,
@@ -55,9 +55,9 @@ class Databases(BaseModel):
                                 null=True)
     host = models.CharField('호스트', max_length=255)
     port = models.IntegerField('포트')
-    sid = models.CharField('SID/DB명', max_length=100, blank=True, null=True)
-    username = models.CharField('사용자명', max_length=100, blank=True, null=True)
-    password = models.CharField('패스워드', max_length=100, blank=True, null=True)
+    # username = models.CharField('사용자명', max_length=100)
+    # password = models.CharField('사용자명', max_length=100)
+    # password = models.CharField('비밀번호', max_length=100)
     options = models.JSONField('추가 옵션', blank=True, null=True)
     bucket_path = models.CharField('bucket경로', max_length=300)
     cdc_bucket_path = models.CharField(
@@ -69,7 +69,7 @@ class Databases(BaseModel):
         db_table = 'sf_databases'
 
     def __str__(self):
-        return f"{self.id_dbenv.db_env_name} {self.db_name}"
+        return self.db_name
 
 
 class LoadInterval(BaseModel):
@@ -145,7 +145,7 @@ class Tables(BaseModel):
         'Spark : fetchsize', default=10000, blank=True, null=True)
     spark_query = models.TextField('BigTable : Query', blank=True, null=True)
     use_yn = models.CharField('사용 여부', max_length=1, choices=[
-                              ('Y', 'Yes'), ('N', 'No')], default='N')
+                              ('Y', 'Yes'), ('N', 'No')], default='Y')
 
     class Meta:
         verbose_name = '대상 테이블 리스트'
@@ -185,30 +185,24 @@ class DataTypesMapping(BaseModel):
 class Columns(BaseModel):
     id_table = models.ForeignKey(Tables,
                                  verbose_name='테이블',
-                                 on_delete=models.CASCADE,
+                                 on_delete=models.DO_NOTHING,
                                  db_column='id_table')
     column_name = models.CharField('컬럼 물리명', max_length=100)
-    comments = models.CharField(
-        '컬럼 논리명', max_length=200, blank=True, null=True)
-    use_yn = models.CharField('사용 여부', max_length=1, choices=[
-                              ('Y', 'Yes'), ('N', 'No')], default='Y')
     pk_yn = models.CharField('PK 여부', max_length=1, choices=[
                               ('Y', 'Yes'), ('N', 'No')], default='N')
     partition_yn = models.CharField('Partition 여부', max_length=1, choices=[
         ('Y', 'Yes'), ('N', 'No')], default='N')
-    
-    datatype = models.CharField('데이터 타입', max_length=100, blank=True, null=True)
-    
-    # id_datatypes = models.ForeignKey(DataTypes,
-    #                                  verbose_name='데이터 타입',
-    #                                  on_delete=models.DO_NOTHING,
-    #                                  db_column='id_datatypes',
-    #                                  blank=True, null=True)
+    id_datatypes = models.ForeignKey(DataTypes,
+                                     verbose_name='데이터 타입',
+                                     on_delete=models.DO_NOTHING,
+                                     db_column='id_datatypes',
+                                     blank=True, null=True)
     # id_datatypes_mapping = models.ForeignKey(DataTypesMapping,
     #                                          verbose_name='매핑 타입',
     #                                          on_delete=models.DO_NOTHING,
     #                                          db_column='id_datatypes_mapping')
-    
+    comments = models.CharField(
+        '컬럼 논리명', max_length=200, blank=True, null=True)
 
     class Meta:
         verbose_name = '대상 컬럼 리스트'

@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <h1>Add Metadata</h1>
+  <form method="post" id="metadata-form">{% csrf_token %}
+    <div class="form-group">
+      <label for="id_db_env">환경:</label>
+      {{ form.db_env }}
+    </div>
+    <div class="form-group">
+      <label for="id_db_name">DB명:</label>
+      {{ form.db_name }}
+    </div>
+    <div class="form-group">
+      <label for="id_table_name">테이블명:</label>
+      {{ form.table_name }}
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("#id_db_env").change(function() {
+        var dbEnvId = $(this).val();
+        $.ajax({
+          url: "{% url 'metadata_admin:load_databases' %}",
+          data: {
+            'db_env': dbEnvId
+          },
+          success: function(data) {
+            var dbNameSelect = $("#id_db_name");
+            dbNameSelect.empty();
+            dbNameSelect.append('<option value="">---------</option>');
+            $.each(data, function(index, db) {
+              dbNameSelect.append('<option value="' + db.id + '">' + db.db_name + '</option>');
+            });
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}

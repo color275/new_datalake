@@ -1,15 +1,9 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from .models import Tables, Databases
+from .models import Tables
 from .serializers import *
 from rest_framework.views import APIView
 from django.db import connection
-from django.http import JsonResponse
-
-def load_databases(request):
-    db_env_id = request.GET.get('db_env')
-    databases = Databases.objects.filter(id_dbenv=db_env_id).values('id', 'db_name')
-    return JsonResponse(list(databases), safe=False)
 
 
 class GetTableInfoByIntervalView(APIView):

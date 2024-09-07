@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+  <div class="dashboard-module">
+    <h2>Metadata Management</h2>
+    <ul>
+      <li>
+        <a href="{% url 'table_metadata:add_metadata' %}">Add Table Metadata</a>
+      </li>
+    </ul>
+  </div>
+
+  {{ block.super }}  <!-- 기존 admin 페이지의 내용을 유지하면서 추가 -->
+{% endblock %}

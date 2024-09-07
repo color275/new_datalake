@@ -9,7 +9,6 @@ from django.urls import path
 from django.shortcuts import render
 from .forms import *
 from .utils.meta_utils import get_or_create_table_metadata
-from django.http import JsonResponse
 
 
 
@@ -75,7 +74,7 @@ class ColumnsInline(admin.TabularInline):
 @admin.register(Tables)
 class TablesAdmin(BaseAdmin):
     list_display_links = ['table_name']
-    search_fields = ('table_name',)
+    search_fields = ('table_name', 'owner')
     list_filter = ('cdc_yn', 'mod_dtm', 'id_db')
 
     inlines = [ColumnsInline]
@@ -108,27 +107,10 @@ class TablesAdmin(BaseAdmin):
         form.save_m2m()
 
     def save_model(self, request, obj, form, change):
-        # 테이블 이름을 소문자로 저장
         obj.table_name = obj.table_name.lower()
         obj.id_mod_user = request.user
         obj.mod_dtm = datetime.datetime.now()
-
-        # 중복 체크: 동일한 데이터베이스와 테이블 이름이 있는지 확인
-        if Tables.objects.filter(table_name=obj.table_name, id_db=obj.id_db).exclude(pk=obj.pk).exists():
-            messages.error(request, f"DB '{obj.id_db.db_name}'에 테이블 '{obj.table_name}'이(가) 이미 존재합니다. 중복된 테이블은 저장할 수 없습니다.")
-            return  # 중복이 있으면 저장하지 않음
-
         super().save_model(request, obj, form, change)
-
-        # 테이블 메타데이터 저장: 테이블 저장 후 메타데이터 저장 함수 호출
-        try:
-            db_id = obj.id_db.id
-            table_name = obj.table_name
-            # 테이블 정보 및 컬럼 정보를 Oracle에서 조회 후 저장
-            get_or_create_table_metadata(db_id, table_name)
-            messages.success(request, f"테이블 '{table_name}'에 대한 메타데이터가 저장되었습니다.")
-        except Exception as e:
-            messages.error(request, f"메타데이터 저장 중 오류 발생: {str(e)}")
 
 @admin.register(DataTypes)
 class DataTypesAdmin(BaseAdmin):
@@ -144,8 +126,44 @@ class DataTypesMappingAdmin(BaseAdmin):
     
 
 
-@admin.register(Columns)
-class ColumnsAdmin(BaseAdmin):
-    list_display_links = ['column_name']
-    search_fields = ('column_name',)
+# @admin.register(Columns)
+# class ColumnsAdmin(BaseAdmin):
+#     list_display_links = ['column_name']
+#     search_fields = ('column_name',)
     
+# admin.py
+
+class TableMetadataAdminSite(admin.AdminSite):
+    site_header = 'Table Metadata Admin'
+    site_title = 'Metadata Admin'
+    index_title = 'Metadata Management'
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('add-metadata/', self.admin_view(self.add_metadata_view)),
+        ]
+        return custom_urls + urls
+
+    def add_metadata_view(self, request):
+        if request.method == 'POST':
+            form = TableMetadataForm(request.POST)
+            if form.is_valid():
+                db_name = form.cleaned_data['db_name']
+                table_name = form.cleaned_data['table_name']
+
+                # get_or_create_table_metadata 실행
+                try:
+                    get_or_create_table_metadata(db_name, table_name)
+                    self.message_user(request, f"Metadata for table '{table_name}' in database '{db_name}' has been added successfully.", messages.SUCCESS)
+                    return HttpResponseRedirect("../")
+                except Exception as e:
+                    self.message_user(request, f"Error: {str(e)}", messages.ERROR)
+                    return HttpResponseRedirect("../")
+        else:
+            form = TableMetadataForm()
+
+        return render(request, 'admin/add_table_metadata.html', {'form': form})
+
+# metadata_admin_site 인스턴스화
+metadata_admin_site = TableMetadataAdminSite(name='metadata_admin')
