@@ -5,8 +5,8 @@ import os
 
 if __name__ == '__main__':
 
-    min_last_update_time = "2024-09-01 23:14:52"
-    max_last_update_time = "2024-09-02 14:09:09"
+    min_last_update_time = "2024-09-03 22:38:09"
+    max_last_update_time = "2024-09-03 23:59:59"
 
     spark_builder = SparkSession.builder \
         .config("spark.hadoop.fs.s3a.aws.credentials.provider", "com.amazonaws.auth.DefaultAWSCredentialsProviderChain") \
@@ -18,7 +18,8 @@ if __name__ == '__main__':
     
     spark = spark_builder.getOrCreate()
 
-    db_host = "database-1.cluster-cgluv9lxvqft.ap-northeast-2.rds.amazonaws.com"
+    db_host = "0.0.0.0"
+    # db_host = "database-1.cluster-cgluv9lxvqft.ap-northeast-2.rds.amazonaws.com"
     db_port = "5432"
     db_database = "ecommerce"
 

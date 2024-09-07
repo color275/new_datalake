@@ -8,9 +8,39 @@ from django.http import HttpResponseRedirect
 from django.urls import path
 from django.shortcuts import render
 from .forms import *
-from .utils.meta_utils import get_or_create_table_metadata
+from utils.meta_utils import get_or_create_table_metadata
 
+class TableMetadataAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/table_metadata_change_list.html'
 
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('add-metadata/', self.admin_site.admin_view(self.add_metadata)),
+        ]
+        return custom_urls + urls
+
+    def add_metadata(self, request):
+        if request.method == 'POST':
+            form = TableMetadataForm(request.POST)
+            if form.is_valid():
+                db_name = form.cleaned_data['db_name']
+                table_name = form.cleaned_data['table_name']
+                
+                # get_or_create_table_metadata 실행
+                try:
+                    get_or_create_table_metadata(db_name, table_name)
+                    self.message_user(request, f"Metadata for table '{table_name}' in database '{db_name}' has been added successfully.", messages.SUCCESS)
+                    return HttpResponseRedirect("../")
+                except Exception as e:
+                    self.message_user(request, f"Error: {str(e)}", messages.ERROR)
+                    return HttpResponseRedirect("../")
+        else:
+            form = TableMetadataForm()
+
+        return render(request, 'admin/add_table_metadata.html', {'form': form})
+
+admin.site.register(Tables, TableMetadataAdmin)
 
 
 class BaseAdmin(admin.ModelAdmin):
@@ -131,39 +161,3 @@ class DataTypesMappingAdmin(BaseAdmin):
 #     list_display_links = ['column_name']
 #     search_fields = ('column_name',)
     
-# admin.py
-
-class TableMetadataAdminSite(admin.AdminSite):
-    site_header = 'Table Metadata Admin'
-    site_title = 'Metadata Admin'
-    index_title = 'Metadata Management'
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('add-metadata/', self.admin_view(self.add_metadata_view)),
-        ]
-        return custom_urls + urls
-
-    def add_metadata_view(self, request):
-        if request.method == 'POST':
-            form = TableMetadataForm(request.POST)
-            if form.is_valid():
-                db_name = form.cleaned_data['db_name']
-                table_name = form.cleaned_data['table_name']
-
-                # get_or_create_table_metadata 실행
-                try:
-                    get_or_create_table_metadata(db_name, table_name)
-                    self.message_user(request, f"Metadata for table '{table_name}' in database '{db_name}' has been added successfully.", messages.SUCCESS)
-                    return HttpResponseRedirect("../")
-                except Exception as e:
-                    self.message_user(request, f"Error: {str(e)}", messages.ERROR)
-                    return HttpResponseRedirect("../")
-        else:
-            form = TableMetadataForm()
-
-        return render(request, 'admin/add_table_metadata.html', {'form': form})
-
-# metadata_admin_site 인스턴스화
-metadata_admin_site = TableMetadataAdminSite(name='metadata_admin')

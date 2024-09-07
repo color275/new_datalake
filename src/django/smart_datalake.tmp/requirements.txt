@@ -1,0 +1,6 @@
+asgiref
+Django
+djangorestframework
+mysqlclient
+sqlparse
+typing_extensions

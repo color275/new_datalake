@@ -87,12 +87,12 @@ DATABASES = {
         'HOST': '0.0.0.0',
         'PORT': '3306',
     },
-    'SMTC': {
+    'dev_smtc': {
         'ENGINE': 'django.db.backends.oracle',
         'NAME': 'DEVSMTC',
         'USER': 'i_chiho',
         'PASSWORD': 'gsshop_776',
-        'HOST': 'smtc_dev_rw.gshs.co.kr',
+        'HOST': '0.0.0.0',
         'PORT': '1630',
     },
 }
