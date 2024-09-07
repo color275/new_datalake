@@ -12,11 +12,11 @@ src/django/smart_datalake/db/mysqldata/*
 # C extensions
 *.so
 **/mysqldata/*
-**/__pycache__/*
+# **/__pycache__/*
 **/pgdata/*
 **/nohup.*
 *.pem
-**/migrations/*
+# **/migrations/*
 
 # Distribution / packaging
 .Python
