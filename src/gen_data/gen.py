@@ -43,13 +43,12 @@ def insert_bulk_data(batch_size):
     while True:
         start_time = time.time()
         insert_query = """
-            INSERT INTO src.orders (order_id, str_order_id, promo_id, order_cnt, order_price, order_dt, last_update_time, customer_id, product_id)
+            INSERT INTO src.orders (order_id, promo_id, order_cnt, order_price, order_dt, last_update_time, customer_id, product_id)
             VALUES %s
         """
         values = []
         for i in range(batch_size):  # batch_size 만큼 삽입
             order_id = order_id_start + i
-            str_order_id = f"abc{str(order_id).zfill(12)}"  # 'abc' + order_id 형식으로 만듦
             promo_id = f"PROMO{random.randint(1, 100):03d}"
             order_cnt = random.randint(1, 10)
             order_price = random.randint(1000, 100000)
@@ -62,7 +61,7 @@ def insert_bulk_data(batch_size):
                 ["insert", "update", "delete"], weights=[50, 50, 0], k=1)[0]
 
             if action == "insert":
-                values.append((order_id, str_order_id, promo_id, order_cnt, order_price,
+                values.append((order_id, promo_id, order_cnt, order_price,
                               order_dt, last_update_time, customer_id, product_id))
                 insert_count += 1
             elif action == "update":
